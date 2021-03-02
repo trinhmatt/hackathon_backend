@@ -48,6 +48,10 @@ passport.deserializeUser(function (user, done) {
     done(null, user);
 })
 
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "/index.html"));
+})
+
 app.use(userRoutes);
 
 
