@@ -12,6 +12,7 @@ const express = require("express"),
     http = require('http').Server(app),
     io = require('socket.io')(http);
 
+const userRoutes = require("./routes/userRoutes");
 
 let HTTP_PORT = process.env.PORT || 8080;
 
@@ -21,7 +22,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
 
 //User authentication
-app.use(session({ secret: "hackathon" }));
+app.use(session({ secret: "hackathon", resave: false, saveUninitialized: false }));
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -47,9 +48,7 @@ passport.deserializeUser(function (user, done) {
     done(null, user);
 })
 
-app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "/index.html"));
-});
+app.use(userRoutes);
 
 
 
