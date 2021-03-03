@@ -78,6 +78,18 @@ module.exports.registerUser = (userData) => {
     })
 }
 
+module.exports.updateUser = (userData) => {
+    return new Promise( (resolve, reject) => {
+        User.findByIdAndUpdate(
+            mongoose.Types.ObjectId(userData._id), 
+            userData, 
+            { new: true, upsert: true}, 
+            (err, updatedUser) => {
+                err ? reject(err) : resolve(updatedUser);
+            })
+    })
+}
+
 module.exports.login = (user) => {
     return new Promise( (resolve, reject) => {
 
@@ -100,6 +112,16 @@ module.exports.login = (user) => {
               reject("No user found");
             })
   
+    })
+}
+
+//GOALS
+module.exports.getGoals = (category) => {
+    return new Promise( (resolve, reject) => {
+        Goal.find({category}, (err, goals) => {
+
+            err ? reject(err) : resolve(goals);
+        })
     })
 }
 
@@ -237,5 +259,92 @@ module.exports.addUserToGoal = (data) => {
         
             }
         })
+    })
+}
+
+module.exports.updateGoal = (update, userID) => {
+    return new Promise( (resolve, reject) => {
+        User.findById(mongoose.Types.ObjectId(userID), (err, user) => {
+            if (!err) {
+                for (let i = 0; i < user.goals.length; i++) {
+                    if (user.goals[i]._id.equals(update._id)) {
+                        user.goals[i] = update;
+                        user.save( err => err ? reject(err) : resolve(user.goals[i]))
+                    }
+                }
+            } else {
+                reject(err);
+            }
+        })
+    })
+}
+
+//CONVERSATIONS
+module.exports.createConversation = (users) => {
+
+    return new Promise( (resolve, reject) => {
+      let convData = {
+        users,
+        messages: []
+      }
+      
+      let newConv = new Conversation(convData)
+      newConv.save( (err) => {
+        if (err) {
+          reject(err);
+        } else {
+  
+          User.findById(mongoose.Types.ObjectId(users[0]), (err, user1) => {
+            if (!err) {
+              
+              user1.conversations.push(newConv._id);
+              
+              user1.save( (err) => {
+                if (!err) {
+                  User.findById(mongoose.Types.ObjectId(users[1]), (err, user2) => {
+                    if (!err) {
+                      user2.conversations.push(newConv._id);
+                      user2.save( (err) => {
+                        if (!err) {
+                          resolve(newConv);
+                        } else {
+                          console.log(err)
+                          reject("could not save array");
+                        }
+                      })
+                    } else {
+                      console.log(err)
+                      reject("could not save array");
+                    }
+                  })
+                } else {
+                  console.log(err);
+                  reject("could not save array");
+                }
+              })
+            }
+          })
+        }
+      })
+    })
+}
+
+module.exports.saveMessage = (messageData) => {
+    console.log("conv id: ", messageData.conversationID)
+    return new Promise( (resolve, reject) => {
+      Conversation.findById(mongoose.Types.ObjectId(messageData.conversationID), (err, conversation) => {
+        if (!err) {
+          conversation.messages = messageData.msgs;
+          conversation.save( (err) => {
+            if (!err) {
+              resolve(conversation.messages);
+            } else {
+              reject(err);
+            }
+          })
+        } else {
+          reject(err);
+        }
+      })
     })
 }

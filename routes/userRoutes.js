@@ -52,4 +52,10 @@ router.post("/register", (req, res) => {
     
 })
 
+router.put("/updateUser", (req, res) => {
+    db.updateUser(req.body)
+        .then( (updatedUser) => res.send(updatedUser))
+        .catch( err => res.status(500).send(err));
+})
+
 module.exports = router;

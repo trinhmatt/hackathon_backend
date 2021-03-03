@@ -13,6 +13,7 @@ const express = require("express"),
     io = require('socket.io')(http);
 
 const userRoutes = require("./routes/userRoutes"),
+    conversationRoutes = require("./routes/conversationRoutes"),
     goalRoutes = require("./routes/goalRoutes");
 
 let HTTP_PORT = process.env.PORT || 8080;
@@ -55,20 +56,19 @@ app.get("/", (req, res) => {
 
 app.use(userRoutes);
 app.use(goalRoutes);
+app.use(conversationRoutes);
 
 
 
 io.on("connection", (socket) => {
     console.log("a user connected");
-    // socket.on("send message", (messageData) => {
-    //     //socket.broadcast.emit("from server", messageData);
-    //     db.saveMessage(messageData)
-    //         .then((newMessages) => {
-    //             console.log(newMessages);
-    //             socket.broadcast.emit("from server", newMessages);
-    //         })
-    //         .catch((err) => console.log(err));
-    // })
+    socket.on("send message", (messageData) => {
+        db.saveMessage(messageData)
+            .then((newMessages) => {
+                socket.broadcast.emit("from server", newMessages);
+            })
+            .catch((err) => console.log(err));
+    })
 })
 
 
