@@ -13,6 +13,8 @@ module.exports.schema = new Schema({
     },
     dateOfBirth: Date,
     gender: String,
+    genderPref: String,
+    avatar: String,
     conversations: [{type: Schema.Types.ObjectId, ref: "conversations"}],
     goals: [
         {

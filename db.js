@@ -280,11 +280,12 @@ module.exports.updateGoal = (update, userID) => {
 }
 
 //CONVERSATIONS
-module.exports.createConversation = (users) => {
+module.exports.createConversation = (users, goalID) => {
 
     return new Promise( (resolve, reject) => {
       let convData = {
         users,
+        goal: goalID,
         messages: []
       }
       

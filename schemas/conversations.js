@@ -3,6 +3,7 @@ const   mongoose = require("mongoose"),
 
 module.exports.schema = new Schema({
     users: [{type: Schema.Types.ObjectId, ref: "users"}],
+    goal: {type: Schema.Types.ObjectId, ref: "goals"},
     messages: [
         {
             user: String,
