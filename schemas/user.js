@@ -11,7 +11,21 @@ module.exports.schema = new Schema({
         type: String, 
         unique: true
     },
+    dateOfBirth: Date,
+    gender: String,
     conversations: [{type: Schema.Types.ObjectId, ref: "conversations"}],
-    buddies: [{type: Schema.Types.ObjectId, ref: "users"}],
-    goals: [{type: Schema.Types.ObjectId, ref: "goals"}]
+    goals: [
+        {
+            goalType: {type: Schema.Types.ObjectId, ref: "goals"},
+            targetGoal: Number,
+            currentProgress: Number,
+            deadline: Date, 
+            dailyProgress: [{
+                date: Date,
+                picture: String, 
+                rating: String
+            }],
+            buddy: {type: Schema.Types.ObjectId, ref: "users"}
+        }
+    ]
 })

@@ -12,7 +12,8 @@ const express = require("express"),
     http = require('http').Server(app),
     io = require('socket.io')(http);
 
-const userRoutes = require("./routes/userRoutes");
+const userRoutes = require("./routes/userRoutes"),
+    goalRoutes = require("./routes/goalRoutes");
 
 let HTTP_PORT = process.env.PORT || 8080;
 
@@ -53,6 +54,7 @@ app.get("/", (req, res) => {
 })
 
 app.use(userRoutes);
+app.use(goalRoutes);
 
 
 

@@ -4,5 +4,8 @@ const   mongoose = require("mongoose"),
 module.exports.schema = new Schema({
     category: String,
     name: String,
-    users: [{type: Schema.Types.ObjectId, ref: "users"}]
-})
+    users: {
+        matched: [{type: Schema.Types.ObjectId, ref: "users"}],
+        notMatched: [{type: Schema.Types.ObjectId, ref: "users"}]
+    }
+});
