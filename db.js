@@ -93,8 +93,24 @@ module.exports.updateUser = (userData) => {
 module.exports.login = (user) => {
     return new Promise( (resolve, reject) => {
 
-        //Find user if they exist
-        User.findOne({ username: user.username }).exec()
+        //Find user if they exist and populate referenced fields
+        User.findOne({ username: user.username })
+            .populate("conversations") 
+            .populate({
+                path: "goals", 
+                populate: {
+                    path: "goalType",
+                    model: "goals"
+                }
+            })
+            .populate({
+                path: "goals", 
+                populate: {
+                    path: "buddy",
+                    model: "users"
+                }
+            })
+            .exec()
             .then( (foundUser) => {
   
               //Compare the hashed password with the password supplied
@@ -112,6 +128,29 @@ module.exports.login = (user) => {
               reject("No user found");
             })
   
+    })
+}
+
+module.exports.getUser = (id) => {
+    return new Promise( (resolve, reject) => {
+        User.findOne({ _id: mongoose.Types.ObjectId(id) })
+        .populate("conversations") 
+        .populate({
+            path: "goals", 
+            populate: {
+                path: "goalType",
+                model: "goals"
+            }
+        })
+        .populate({
+            path: "goals", 
+            populate: {
+                path: "buddy",
+                model: "users"
+            }
+        })
+        .exec()
+        .then( user => resolve(user)).catch( err => reject(err));
     })
 }
 
@@ -249,7 +288,7 @@ module.exports.addUserToGoal = (data) => {
                                     }
                                     dbHelpers.addGoalToUser(newGoal, user)
                                         .then( () => {
-                                            resolve("add success, no match")
+                                            resolve(newGoal);
                                         }).catch( err => reject(err))
                                 })
                             })

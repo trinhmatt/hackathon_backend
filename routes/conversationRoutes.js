@@ -4,7 +4,7 @@ const   express = require("express"),
         db = require("../db");
 
 router.post("/create-conversation", (req, res) => {
-    db.createConversation(req.body.users)
+    db.createConversation(req.body.users, req.body.goal)
     .then( (response) => {
       res.send(response);
     }).catch( err => res.send(err));

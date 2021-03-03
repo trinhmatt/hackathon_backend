@@ -58,4 +58,10 @@ router.put("/updateUser", (req, res) => {
         .catch( err => res.status(500).send(err));
 })
 
+router.get("/get-user/:id", (req, res) => {
+    db.getUser(req.params.id)
+        .then( user => res.send(user))
+        .catch( err => res.status(500).send(err));
+})
+
 module.exports = router;
