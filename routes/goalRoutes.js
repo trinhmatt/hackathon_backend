@@ -4,8 +4,9 @@ const   express = require("express"),
 
 router.post("/add-user-to-goal", (req, res) => {
     db.addUserToGoal(req.body)
-        .then( (matchedUser) => {
+        .then( (response) => {
             //res.send(matchedUser);
+            res.send(response);
         }).catch( err => res.status(500).send(err));
 })
 

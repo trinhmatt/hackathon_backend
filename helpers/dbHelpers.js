@@ -1,8 +1,8 @@
 const dbHelpers = {
-    addGoalToUser = (data, user) => {
+    addGoalToUser: (data, user) => {
         return new Promise( (resolve, reject) => {
             const newGoal = {
-                goalType: data._id,
+                goalType: data.goalType,
                 targetGoal: data.targetGoal,
                 currentProgress: 0,
                 deadline: data.deadline,

@@ -41,7 +41,7 @@ router.post("/register", (req, res) => {
     if (userCheck) {
 
         userInfo.conversations = [];
-        userInfo.buddies = [];
+        userInfo.goals = [];
 
         db.registerUser(userInfo).then( (user) => {
             res.send(user);
