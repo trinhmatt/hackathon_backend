@@ -95,7 +95,13 @@ module.exports.login = (user) => {
 
         //Find user if they exist and populate referenced fields
         User.findOne({ username: user.username })
-            .populate("conversations")
+            .populate({
+                path: "goals",
+                populate: {
+                    path: "conversation",
+                    model: "conversations"
+                }
+            })
             .populate({
                 path: "goals",
                 populate: {
