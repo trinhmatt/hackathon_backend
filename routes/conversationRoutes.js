@@ -10,4 +10,11 @@ router.post("/create-conversation", (req, res) => {
     }).catch( err => res.send(err));
 })
 
+router.get("/get-convo/:convoID", (req, res) => {
+  console.log(req.params.convoID)
+  db.getConversation(req.params.convoID)
+    .then( convo => res.send(convo))
+    .catch( err => res.status(500).send(err));
+})
+
 module.exports = router;

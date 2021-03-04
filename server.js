@@ -63,6 +63,7 @@ app.use(conversationRoutes);
 io.on("connection", (socket) => {
     console.log("a user connected");
     socket.on("send message", (messageData) => {
+        console.log(messageData);
         db.saveMessage(messageData)
             .then((newMessages) => {
                 socket.broadcast.emit("from server", newMessages);

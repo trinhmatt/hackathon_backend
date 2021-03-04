@@ -171,100 +171,114 @@ module.exports.addUserToGoal = (data) => {
             if (!err) {
                 //Check if users available to match in same goal 
                 if (goal.users.notMatched.length > 0) {
-                    //add buddy for both users
-                    User.findById(mongoose.Types.ObjectId(data.user), (err, user) => {
 
-                        if (err) {
-                            reject(err);
-                        } 
+                    dbHelpers.createConversation([mongoose.Types.ObjectId(data.user), goal.users.notMatched[0]], Conversation)
+                        .then((conversation) => {
+                            //add buddy for both users
+                            User.findById(mongoose.Types.ObjectId(data.user), (err, user) => {
 
-                        const newGoal = {
-                            goalType: goal._id,
-                            targetGoal: data.targetGoal,
-                            currentProgress: 0,
-                            deadline: data.deadline,
-                            dailyProgress: [],
-                            buddy: goal.users.notMatched[0]
-                        }
-
-                        User.findById(mongoose.Types.ObjectId(goal.users.notMatched[0]), (err, otherUser) => {
-                            
-                            if (err) {
-                                reject(err);
-                            } 
-
-                            for (let i = 0; i < otherUser.goals.length; i++) {
-
-                                if (otherUser.goals[i].goalType.equals(newGoal.goalType)) {
-                                    otherUser.goals[i].buddy = user._id;
-                                    otherUser.save( (err) => {
-                                        if (err) {
-                                            reject(err);
-                                        }
-                                        dbHelpers.addGoalToUser(newGoal, user)
-                                            .then(() => {
-
-                                                goal.users.notMatched.shift();
-                                                goal.save((err) => {
-                                                    err ? reject(err) : resolve(newGoal);
-                                                })
-
-                                            }).catch((err) => reject(err));
-                                    })
+                                if (err) {
+                                    reject(err);
                                 }
-                            }
-                        })
-                    })
+
+                                const newGoal = {
+                                    goalType: goal._id,
+                                    targetGoal: data.targetGoal,
+                                    currentProgress: 0,
+                                    deadline: data.deadline,
+                                    dailyProgress: [],
+                                    buddy: goal.users.notMatched[0],
+                                    conversation: conversation._id
+                                }
+
+                                User.findById(mongoose.Types.ObjectId(goal.users.notMatched[0]), (err, otherUser) => {
+
+                                    if (err) {
+                                        reject(err);
+                                    }
+
+                                    for (let i = 0; i < otherUser.goals.length; i++) {
+
+                                        if (otherUser.goals[i].goalType.equals(newGoal.goalType)) {
+                                            otherUser.goals[i].buddy = user._id;
+                                            otherUser.goals[i].conversation = conversation._id;
+                                            otherUser.save((err) => {
+                                                if (err) {
+                                                    reject(err);
+                                                }
+                                                dbHelpers.addGoalToUser(newGoal, user)
+                                                    .then(() => {
+
+                                                        goal.users.notMatched.shift();
+                                                        goal.save((err) => {
+                                                            err ? reject(err) : resolve(newGoal);
+                                                        })
+
+                                                    }).catch((err) => reject(err));
+                                            })
+                                        }
+                                    }
+                                })
+                            })
+                        }).catch( err => reject(err));
+
                 } else {
                     //Find notMatched user in other goals of same category 
-                    Goal.find({category: goal.category}, (err, allGoals) => {
+                    Goal.find({ category: goal.category }, (err, allGoals) => {
 
                         if (allGoals.length > 0) {
                             for (let i = 0; i < allGoals.length; i++) {
                                 if (allGoals[i].users.notMatched.length > 0) {
-                                    
-                                        User.findById(mongoose.Types.ObjectId(data.user), (err, user) => {
 
-                                            if (err) {
-                                                reject(err);
-                                            } 
-                                            console.log(allGoals[i]._id);
-                                            const newGoal = {
-                                                goalType: allGoals[i]._id,
-                                                targetGoal: data.targetGoal,
-                                                currentProgress: 0,
-                                                deadline: data.deadline,
-                                                dailyProgress: [],
-                                                buddy: allGoals[i].users.notMatched[0]
-                                            }
-                    
-                                            User.findById(mongoose.Types.ObjectId(allGoals[i].users.notMatched[0]), (err, otherUser) => {
-                                                
+                                    dbHelpers.createConversation([mongoose.Types.ObjectId(data.user), allGoals[i].users.notMatched[0]], Conversation)
+                                        .then( (conversation) => {
+                                            User.findById(mongoose.Types.ObjectId(data.user), (err, user) => {
+
                                                 if (err) {
                                                     reject(err);
-                                                } 
-
-                                                for (let i = 0; i < otherUser.goals.length; i++) {
-                                                    if (otherUser.goals[i].goalType === newGoal._id) {
-                                                        otherUser.goals[i].buddy = user._id;
-                                                        otherUser.save( (err) => {
-                                                            if (err) {
-                                                                reject(err);
-                                                            }
-                                                            dbHelpers.addGoalToUser(newGoal, user)
-                                                                .then(() => {
-
-                                                                    allGoals[i].users.notMatched.shift();
-                                                                    allGoals[i].save((err) => {
-                                                                        err ? reject(err) : resolve(newGoal);
-                                                                    })
-
-                                                                }).catch((err) => reject(err));
-                                                        })
-                                                    }
                                                 }
-                                            })
-                                        })
+
+                                                const newGoal = {
+                                                    goalType: allGoals[i]._id,
+                                                    targetGoal: data.targetGoal,
+                                                    currentProgress: 0,
+                                                    deadline: data.deadline,
+                                                    dailyProgress: [],
+                                                    buddy: allGoals[i].users.notMatched[0],
+                                                    conversation: conversation._id
+                                                }
+        
+                                                User.findById(mongoose.Types.ObjectId(allGoals[i].users.notMatched[0]), (err, otherUser) => {
+        
+                                                    if (err) {
+                                                        reject(err);
+                                                    }
+        
+                                                    for (let i = 0; i < otherUser.goals.length; i++) {
+                                                        if (otherUser.goals[i].goalType.equals(newGoal.goalType)) {
+
+                                                            otherUser.goals[i].buddy = user._id;
+                                                            otherUser.goals[i].conversation = conversation._id;
+
+                                                            otherUser.save((err) => {
+                                                                if (err) {
+                                                                    reject(err);
+                                                                }
+                                                                dbHelpers.addGoalToUser(newGoal, user)
+                                                                    .then(() => {
+        
+                                                                        allGoals[i].users.notMatched.shift();
+                                                                        allGoals[i].save((err) => {
+                                                                                err ? reject(err) : resolve(newGoal);
+                                                                            })
+        
+                                                                        }).catch((err) => reject(err));
+                                                                })
+                                                            }
+                                                        }
+                                                    })
+                                                })
+                                        }).catch( err => reject(err));               
                                 }
                             }
 
@@ -366,6 +380,15 @@ module.exports.createConversation = (users, goalID) => {
           })
         }
       })
+    })
+}
+
+module.exports.getConversation = (convID) => {
+    return new Promise( (resolve, reject) => {
+        Conversation.findById(mongoose.Types.ObjectId(convID), (err, conversation) => {
+            console.log("convo: ", conversation)
+            err ? reject(err) : resolve(conversation);
+        })
     })
 }
 

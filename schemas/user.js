@@ -27,7 +27,8 @@ module.exports.schema = new Schema({
                 picture: String, 
                 rating: String
             }],
-            buddy: {type: Schema.Types.ObjectId, ref: "users"}
+            buddy: {type: Schema.Types.ObjectId, ref: "users"},
+            conversation: {type: Schema.Types.ObjectId, ref: "conversations"}
         }
     ]
 })

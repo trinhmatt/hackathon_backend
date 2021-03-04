@@ -1,15 +1,8 @@
+
 const dbHelpers = {
     addGoalToUser: (data, user) => {
         return new Promise( (resolve, reject) => {
-            const newGoal = {
-                goalType: data.goalType,
-                targetGoal: data.targetGoal,
-                currentProgress: 0,
-                deadline: data.deadline,
-                dailyProgress: [],
-                buddy: data.buddy
-            }
-            user.goals.push(newGoal);
+            user.goals.push(data);
             user.save( (err) => {
                 if (!err) {
                     resolve()
@@ -19,6 +12,19 @@ const dbHelpers = {
             })
         })
         
+    },
+    createConversation: (users, ConversationModel) => {
+        return new Promise( (resolve, reject) => {
+            const convObj = {
+                users,
+                messages: []
+            }
+            let newConv = new ConversationModel(convObj);
+
+            newConv.save( (err) => {
+                err ? reject(err) : resolve(newConv);
+            })
+        })
     }
 }
 
