@@ -11,9 +11,14 @@ router.post("/create-conversation", (req, res) => {
 })
 
 router.get("/get-convo/:convoID", (req, res) => {
-  console.log(req.params.convoID)
   db.getConversation(req.params.convoID)
     .then( convo => res.send(convo))
+    .catch( err => res.status(500).send(err));
+})
+
+router.get("/get-all-convos/:userID", (req, res) => {
+  db.getAllConvos(req.params.userID)
+    .then( goals => res.send(goals))
     .catch( err => res.status(500).send(err));
 })
 

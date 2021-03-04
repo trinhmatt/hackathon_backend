@@ -134,7 +134,6 @@ module.exports.login = (user) => {
 module.exports.getUser = (id) => {
     return new Promise((resolve, reject) => {
         User.findOne({ _id: mongoose.Types.ObjectId(id) })
-            .populate("conversations")
             .populate({
                 path: "goals",
                 populate: {
@@ -151,6 +150,28 @@ module.exports.getUser = (id) => {
             })
             .exec()
             .then(user => resolve(user)).catch(err => reject(err));
+    })
+}
+
+module.exports.getAllConvos = (id) => {
+    return new Promise((resolve, reject) => {
+        User.findOne({ _id: mongoose.Types.ObjectId(id) })
+            .populate({
+                path: "goals",
+                populate: {
+                    path: "goalType",
+                    model: "goals"
+                }
+            })
+            .populate({
+                path: "goals",
+                populate: {
+                    path: "conversation",
+                    model: "conversations"
+                }
+            })
+            .exec()
+            .then(user => resolve(user.goals)).catch( err => reject(err));
     })
 }
 
@@ -207,7 +228,7 @@ module.exports.addUserToGoal = (data) => {
 
                                             otherUser.goals[i].buddy = user._id;
                                             otherUser.goals[i].conversation = conversation._id;
-                                            
+
                                             otherUser.save((err) => {
                                                 if (err) {
                                                     reject(err);
