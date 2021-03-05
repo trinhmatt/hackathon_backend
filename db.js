@@ -177,7 +177,7 @@ module.exports.getAllConvos = (id) => {
                 }
             })
             .exec()
-            .then(user => resolve(user.goals)).catch( err => reject(err));
+            .then(user => resolve(user.goals)).catch(err => reject(err));
     })
 }
 
@@ -224,33 +224,39 @@ module.exports.addUserToGoal = (data) => {
                                         reject(err);
                                     }
 
-                                    let didMatch = false;
-
+                                    let otherUserGoal = {};
+                                    let goalIndex = -1;
                                     for (let i = 0; i < otherUser.goals.length; i++) {
 
-                                        if (otherUser.goals[i].goalType.equals(newGoal.goalType) && !didMatch) {
-
-                                            didMatch = true;
-
-                                            otherUser.goals[i].buddy = user._id;
-                                            otherUser.goals[i].conversation = conversation._id;
-
-                                            otherUser.save((err) => {
-                                                if (err) {
-                                                    reject(err);
-                                                }
-                                                dbHelpers.addGoalToUser(newGoal, user)
-                                                    .then(() => {
-
-                                                        goal.users.notMatched.shift();
-                                                        goal.save((err) => {
-                                                            err ? reject(err) : resolve(newGoal);
-                                                        })
-
-                                                    }).catch((err) => reject(err));
-                                            })
+                                        if (otherUser.goals[i].goalType.equals(newGoal.goalType)) {
+                                            otherUserGoal = otherUser.goals[i];
+                                            goalIndex = i;
+                                            break;
                                         }
                                     }
+
+                                    if (otherUserGoal._id) {
+                                        otherUserGoal.buddy = user._id;
+                                        otherUserGoal.conversation = conversation._id;
+
+                                        otherUser.goals[goalIndex] = otherUserGoal;
+                                        otherUser.save((err) => {
+                                            if (err) {
+                                                reject(err);
+                                            }
+                                            dbHelpers.addGoalToUser(newGoal, user)
+                                                .then(() => {
+
+                                                    goal.users.notMatched.shift();
+                                                    goal.save((err) => {
+                                                        err ? reject(err) : resolve(newGoal);
+                                                    })
+
+                                                }).catch((err) => reject(err));
+                                        })
+                                    }
+
+
                                 })
                             })
                         }).catch(err => reject(err));
@@ -261,72 +267,84 @@ module.exports.addUserToGoal = (data) => {
 
                         if (allGoals.length > 0) {
                             let didMatch = false;
+                            let parentGoal = {};
+                            let otherUserGoal = {};
+                            let goalIndex = -1;
+                            let otherUserGoalIndex = -1;
+
                             for (let i = 0; i < allGoals.length; i++) {
 
                                 //Match user with first available user in the same category
-                                if (allGoals[i].users.notMatched.length > 0 && !didMatch) {
+                                if (allGoals[i].users.notMatched.length > 0) {
 
-                                    //Need to track if a match has been made since for loop does not wait for async function
-                                    didMatch = true;
+                                    parentGoal = allGoals[i];
+                                    goalIndex = i;
 
-                                    dbHelpers.createConversation([mongoose.Types.ObjectId(data.user), allGoals[i].users.notMatched[0]], Conversation)
-                                        .then((conversation) => {
-                                            User.findById(mongoose.Types.ObjectId(data.user), (err, user) => {
+
+
+                                }
+                            }
+
+                            if (parentGoal._id) {
+                                dbHelpers.createConversation([mongoose.Types.ObjectId(data.user), parentGoal.users.notMatched[0]], Conversation)
+                                    .then((conversation) => {
+                                        User.findById(mongoose.Types.ObjectId(data.user), (err, user) => {
+
+                                            if (err) {
+                                                reject(err);
+                                            }
+
+                                            const newGoal = {
+                                                goalType: allGoals[goalIndex]._id,
+                                                targetGoal: data.targetGoal,
+                                                currentProgress: 0,
+                                                deadline: data.deadline,
+                                                dailyProgress: [],
+                                                buddy: allGoals[goalIndex].users.notMatched[0],
+                                                conversation: conversation._id
+                                            }
+
+                                            User.findById(mongoose.Types.ObjectId(allGoals[goalIndex].users.notMatched[0]), (err, otherUser) => {
 
                                                 if (err) {
                                                     reject(err);
                                                 }
 
-                                                const newGoal = {
-                                                    goalType: allGoals[i]._id,
-                                                    targetGoal: data.targetGoal,
-                                                    currentProgress: 0,
-                                                    deadline: data.deadline,
-                                                    dailyProgress: [],
-                                                    buddy: allGoals[i].users.notMatched[0],
-                                                    conversation: conversation._id
+                                                //Assign buddy and add conversation reference for other user
+                                                for (let i = 0; i < otherUser.goals.length; i++) {
+                                                    if (otherUser.goals[i].goalType.equals(newGoal.goalType)) {
+                                                        otherUserGoal = otherUser.goals[i];
+                                                        otherUserGoalIndex = i;
+                                                        didMatch = true;
+                                                    }
                                                 }
 
-                                                User.findById(mongoose.Types.ObjectId(allGoals[i].users.notMatched[0]), (err, otherUser) => {
+                                                otherUserGoal.buddy = user._id;
+                                                otherUserGoal.conversation = conversation._id;
+                                                otherUser.goals[otherUserGoalIndex] = otherUserGoal;
 
+                                                otherUser.save((err) => {
                                                     if (err) {
                                                         reject(err);
                                                     }
 
-                                                    //Assign buddy and add conversation reference for other user
-                                                    for (let i = 0; i < otherUser.goals.length; i++) {
-                                                        if (otherUser.goals[i].goalType.equals(newGoal.goalType)) {
-                                                            didMatch = true;
-                                                            otherUser.goals[i].buddy = user._id;
-                                                            otherUser.goals[i].conversation = conversation._id;
+                                                    //Add goal to current user
+                                                    dbHelpers.addGoalToUser(newGoal, user)
+                                                        .then(() => {
 
-                                                            otherUser.save((err) => {
-                                                                if (err) {
-                                                                    reject(err);
-                                                                }
-
-                                                                //Add goal to current user
-                                                                dbHelpers.addGoalToUser(newGoal, user)
-                                                                    .then(() => {
-
-                                                                        //Remove user from goal's unmatched array
-                                                                        allGoals[i].users.notMatched.shift();
-                                                                        allGoals[i].save((err) => {
-                                                                            err ? reject(err) : resolve(newGoal);
-                                                                        })
-
-                                                                    }).catch((err) => reject(err));
+                                                            //Remove user from goal's unmatched array
+                                                            allGoals[goalIndex].users.notMatched.shift();
+                                                            allGoals[goalIndex].save((err) => {
+                                                                err ? reject(err) : resolve(newGoal);
                                                             })
-                                                        }
-                                                    }
+
+                                                        }).catch((err) => reject(err));
                                                 })
                                             })
-                                        }).catch(err => reject(err));
-                                }
-                            }
-
-                            //If no matches possible
-                            if (!didMatch) {
+                                        })
+                                    }).catch(err => reject(err));
+                            } else {
+                                //If no matches possible
                                 goal.users.notMatched.push(data.user)
                                 goal.save((err) => {
                                     if (err) {
@@ -350,8 +368,11 @@ module.exports.addUserToGoal = (data) => {
                                             }).catch(err => reject(err))
                                     })
                                 })
-                            }   
-                            
+                            }
+
+
+
+
                         }
                     })
                 }

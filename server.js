@@ -59,11 +59,10 @@ app.use(goalRoutes);
 app.use(conversationRoutes);
 
 
-
+//Init socket to listen for new messages
 io.on("connection", (socket) => {
     console.log("a user connected");
     socket.on("send message", (messageData) => {
-        console.log(messageData);
         db.saveMessage(messageData)
             .then((newMessages) => {
                 socket.broadcast.emit("from server", {newMessages, conversation: messageData.conversationID});
@@ -72,7 +71,7 @@ io.on("connection", (socket) => {
     })
 })
 
-
+//Initialize database, then start server
 db.initialize().then(() => {
     http.listen(HTTP_PORT, () => {
         console.log("app listening on: " + HTTP_PORT);
