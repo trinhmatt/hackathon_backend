@@ -18,15 +18,10 @@ router.post("/add-user-to-goal", (req, res) => {
 })
 
 router.put("/update-goal", (req, res) => {
-    db.updateGoal(req.body)
+    db.updateGoal(req.body.goal, req.body.user)
         .then( (updatedGoal) => res.send(updatedGoal))
         .catch( err => res.status(500).send(err));
 })
 
-router.put("/update-progress", (req, res) => {
-    db.updateProgress(req.body.info, req.body.progress)
-        .then( response => res.send(response))
-        .catch( err => {res.status(500); res.send(err)});
-})
 
 module.exports = router;

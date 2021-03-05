@@ -367,8 +367,8 @@ module.exports.updateGoal = (update, userID) => {
         User.findById(mongoose.Types.ObjectId(userID), (err, user) => {
             if (!err) {
                 for (let i = 0; i < user.goals.length; i++) {
-                    if (user.goals[i]._id.equals(update._id)) {
-                        user.goals[i] = update;
+                    if (user.goals[i]._id.equals(update.id)) {
+                        user.goals[i].currentProgress += parseInt(update.progress);
                         user.save(err => err ? reject(err) : resolve(user.goals[i]))
                     }
                 }
