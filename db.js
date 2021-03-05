@@ -361,6 +361,7 @@ module.exports.addUserToGoal = (data) => {
     })
 }
 
+
 module.exports.updateGoal = (update, userID) => {
     return new Promise((resolve, reject) => {
         User.findById(mongoose.Types.ObjectId(userID), (err, user) => {

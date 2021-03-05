@@ -23,4 +23,10 @@ router.put("/update-goal", (req, res) => {
         .catch( err => res.status(500).send(err));
 })
 
+router.put("/update-progress", (req, res) => {
+    db.updateProgress(req.body.info, req.body.progress)
+        .then( response => res.send(response))
+        .catch( err => {res.status(500); res.send(err)});
+})
+
 module.exports = router;
