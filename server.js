@@ -66,7 +66,7 @@ io.on("connection", (socket) => {
         console.log(messageData);
         db.saveMessage(messageData)
             .then((newMessages) => {
-                socket.broadcast.emit("from server", newMessages);
+                socket.broadcast.emit("from server", {newMessages, conversation: messageData.conversationID});
             })
             .catch((err) => console.log(err));
     })
