@@ -13,3 +13,6 @@ Users are paired with "buddies" who have similar goals as them. The purpose of t
 - Redux
 - Express.js
 - MongoDB
+
+
+Front end code can be found here: https://github.com/vivyliang/hackathon-frontend
